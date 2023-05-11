@@ -1,0 +1,50 @@
+import netmiko
+from netmiko import ConnectHandler
+from netmiko import exceptions
+from paramiko.ssh_exception import SSHException
+import os
+from getpass import getpass, getuser
+
+def get_credentials():
+    username = input('Enter username : ')
+    #password = None
+    #while not password:
+    password = getpass('Enter password : ')
+    return username, password
+
+ip_list = input("Enter the filename which contails IP details to be blocked : ")
+term_name1 = ip_list[ :- 4]
+#print(term_name1)
+#term_name = input("Enter the term name : ")
+ip_add_list = open(ip_list)
+
+f = ip_add_list.readlines()
+
+username, password = get_credentials()
+device_type = 'juniper'
+devices = open('devices.txt')
+row = 0
+
+
+
+for IP in devices:
+    dev = {
+        'device_type' : 'juniper',
+        'ip' : IP,
+        'username' : username,
+        'password' : password
+              }
+    print("Pushing configuration to " + IP)
+        
+    connection_1 = ConnectHandler(**dev)
+
+    for ip_b in f:
+    #print(ip_b)
+        
+        outside_in = ("set firewall family inet filter OUTSIDE-ACCESS-IN term " + term_name1 + " from source-address " +  ip_b)
+        print(outside_in)
+    
+        connection_1.send_config_set(outside_in, exit_config_mode=False)
+      
+  
+        #print(outside_in)
